@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Something Went Wrong</h2>
+    <p style="color: #9b2c2c; margin-bottom: 1rem;">{{ message }}</p>
+    <a href="/" class="btn" style="text-decoration:none; display:inline-block;">Try Again</a>
+</div>
+{% endblock %}

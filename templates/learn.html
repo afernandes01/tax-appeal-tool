@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+
+{% block title %}How Property Tax Appeals Work{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>How Cook County Assesses Your Property</h2>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        Cook County is the only county in Illinois that classifies property into different
+        types, each assessed at a different percentage of fair market value. Residential
+        properties (Class 2) are assessed at <strong>10% of fair market value</strong>.
+        Commercial and industrial properties are assessed at 25%.
+    </p>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        The assessment chain works like this:
+    </p>
+    <div class="stat-grid" style="margin-bottom: 1rem;">
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">Fair Market Value</div>
+            <div class="label">What the county thinks your home is worth</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">× 10%</div>
+            <div class="label">Assessment ratio for residential</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">= Assessed Value</div>
+            <div class="label">What appears on your assessment notice</div>
+        </div>
+    </div>
+    <div class="stat-grid" style="margin-bottom: 1rem;">
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">Assessed Value</div>
+            <div class="label">Starting point</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">× Equalization Factor</div>
+            <div class="label">State multiplier (~2.9)</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">= EAV</div>
+            <div class="label">Equalized Assessed Value</div>
+        </div>
+    </div>
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">EAV - Exemptions</div>
+            <div class="label">Homeowner, senior, etc.</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">× Tax Rate</div>
+            <div class="label">Set by local taxing districts</div>
+        </div>
+        <div class="stat-box">
+            <div class="value" style="font-size:1rem;">= Your Tax Bill</div>
+            <div class="label">What you actually pay</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>The Triennial Reassessment Cycle</h2>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        Cook County's 38 townships rotate through three triads on a 3-year cycle.
+        A successful appeal during a reassessment year can yield <strong>three years of savings</strong>.
+    </p>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Triad</th>
+                    <th>Reassessment Years</th>
+                    <th>Status (2026)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>North / Northwest suburbs (13 townships)</td>
+                    <td>2022, 2025, 2028</td>
+                    <td>Last reassessed 2025</td>
+                </tr>
+                <tr>
+                    <td>South / Southwest suburbs (17 townships)</td>
+                    <td>2023, 2026, 2029</td>
+                    <td>Currently being reassessed</td>
+                </tr>
+                <tr>
+                    <td>City of Chicago (8 townships)</td>
+                    <td>2024, 2027, 2030</td>
+                    <td>Last reassessed 2024</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>The Four Levels of Appeal</h2>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Level 1 — Cook County Assessor's Office.</strong>
+        The first and simplest level. File online within 30 days of your reassessment notice at
+        <a href="https://www.cookcountyassessor.com/online-appeals" target="_blank">cookcountyassessor.com</a>.
+        Filing is free and takes about 20 minutes. You can submit up to 6 comparable PINs.
+        Decisions arrive within approximately 60 days.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Level 2 — Board of Review (BOR).</strong>
+        The critical level. The BOR is a separate body that sets the final county-level valuation.
+        You do not need to file with the Assessor first. File online at
+        <a href="https://appeals.cookcountyboardofreview.com" target="_blank">appeals.cookcountyboardofreview.com</a>.
+        The BOR opens each township after the Assessor completes its work. Check
+        <a href="https://www.cookcountyboardofreview.com/dates-and-deadlines" target="_blank">dates and deadlines here</a>.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Level 3 — Property Tax Appeal Board (PTAB).</strong>
+        A state-level body requiring filing within 30 days of the BOR's written decision.
+        PTAB requires at least 3 comparable properties and cases typically take 2+ years.
+        PTAB reductions roll over for the remainder of the triennial period.
+        Forms are at <a href="https://ptab.illinois.gov/forms.html" target="_blank">ptab.illinois.gov</a>.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Level 4 — Circuit Court.</strong>
+        Filed within 165 days after the first penalty date of the second tax installment.
+        Requires the higher "clear and convincing evidence" standard. The full tax bill
+        must be paid before filing.
+    </p>
+</div>
+
+<div class="card">
+    <h2>Three Bases for Appeal</h2>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Lack of Uniformity</strong> (most common and typically strongest):
+        Your property is assessed higher per square foot than comparable properties in the
+        same neighborhood and classification. This tool's Uniformity Analysis helps you
+        build this argument.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Overvaluation:</strong>
+        The assessed value implies a fair market value that exceeds what comparable homes
+        have recently sold for, or exceeds your own recent purchase price. This tool's
+        Overvaluation Analysis helps you build this argument.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        <strong>Incorrect Property Description:</strong>
+        Factual errors in recorded characteristics like square footage, room count, or
+        property class. Review your property details on the
+        <a href="https://www.cookcountyassessor.com/address-search" target="_blank">Assessor's website</a>
+        and file a correction if needed.
+    </p>
+</div>
+
+<div class="card">
+    <h2>Why This Matters</h2>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        Research from the University of Chicago and investigative reporting by ProPublica
+        have shown that Cook County's property tax system is deeply regressive. Lower-value
+        homes are systematically overassessed relative to higher-value homes, shifting the
+        tax burden onto less affluent homeowners.
+    </p>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        There are significant racial disparities in who appeals: studies show that appeal
+        rates differ dramatically across neighborhoods, with communities that would benefit
+        most from appeals being least likely to file. Commercial appeal firms charge 25 to 50%
+        of first-year savings for work that is fundamentally data retrieval and analysis.
+    </p>
+    <p style="font-size: 0.9rem;">
+        This tool aims to make that analysis accessible to everyone for free.
+    </p>
+</div>
+
+<div style="text-align: center; margin: 2rem 0;">
+    <a href="/" class="btn" style="text-decoration:none; display:inline-block;">
+        Analyze Your Property
+    </a>
+</div>
+{% endblock %}

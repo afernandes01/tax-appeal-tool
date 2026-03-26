@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}All Sales for {{ prop.pin }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>All Recent Sales</h2>
+    <p style="font-size: 0.9rem; color: #718096; margin-bottom: 1rem;">
+        All recent arm's-length sales in neighborhood {{ prop.nbhd_code }}, Class {{ prop.class }}.
+        Your implied fair market value: <strong>${{ "{:,.0f}".format(prop.implied_fmv) }}</strong>.
+        Click any column header to sort.
+    </p>
+
+    {% if sales %}
+    <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+        <table id="sales-table">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th onclick="sortTable('sales-table', 0, 'num')" style="cursor:pointer;">#</th>
+                    <th onclick="sortTable('sales-table', 1, 'str')" style="cursor:pointer;">PIN ↕</th>
+                    <th onclick="sortTable('sales-table', 2, 'str')" style="cursor:pointer;">Address ↕</th>
+                    <th onclick="sortTable('sales-table', 3, 'num')" style="cursor:pointer;">Sale Price ↕</th>
+                    <th onclick="sortTable('sales-table', 4, 'str')" style="cursor:pointer;">Sale Date ↕</th>
+                    <th onclick="sortTable('sales-table', 5, 'num')" style="cursor:pointer;">Sqft ↕</th>
+                    <th onclick="sortTable('sales-table', 6, 'num')" style="cursor:pointer;">Year Built ↕</th>
+                    <th onclick="sortTable('sales-table', 7, 'num')" style="cursor:pointer;">Beds ↕</th>
+                    <th onclick="sortTable('sales-table', 8, 'num')" style="cursor:pointer;">Similarity ↕</th>
+                    <th onclick="sortTable('sales-table', 9, 'num')" style="cursor:pointer;">vs Your FMV ↕</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ sale.pin }}</td>
+                    <td>{{ sale.get("address", "N/A") }}</td>
+                    <td data-val="{{ sale.sale_price | float }}">${{ "{:,.0f}".format(sale.sale_price | float) }}</td>
+                    <td>{{ sale.sale_date[:10] if sale.sale_date else "N/A" }}</td>
+                    <td data-val="{{ sale.char_bldg_sf | default(0) | float }}">{{ "{:,.0f}".format(sale.char_bldg_sf | float) if sale.char_bldg_sf else "N/A" }}</td>
+                    <td data-val="{{ sale.char_yrblt | default(0) | float }}">{{ "{:.0f}".format(sale.char_yrblt | float) if sale.char_yrblt else "N/A" }}</td>
+                    <td data-val="{{ sale.char_beds | default(0) | float }}">{{ "{:.0f}".format(sale.char_beds | float) if sale.char_beds else "N/A" }}</td>
+                    <td data-val="{{ sale.similarity_pct | default(0) | float }}">{{ sale.similarity_pct if sale.similarity_pct else "N/A" }}%</td>
+                    {% set diff = sale.sale_price | float - prop.implied_fmv %}
+                    <td data-val="{{ diff }}" class="{{ 'positive' if diff < 0 else 'negative' }}">
+                        {{ "{:+,.0f}".format(diff) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No sales data available.</p>
+    {% endif %}
+
+    <p style="margin-top: 1.5rem;">
+        <a href="javascript:history.back()" class="btn" style="text-decoration:none; display:inline-block;">← Back to Results</a>
+    </p>
+</div>
+
+<script>
+    let sortDirections = {};
+
+    function sortTable(tableId, colIndex, type) {
+        const table = document.getElementById(tableId);
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        const dir = sortDirections[tableId + colIndex] === 'asc' ? 'desc' : 'asc';
+        sortDirections[tableId + colIndex] = dir;
+
+        rows.sort(function(a, b) {
+            let aVal, bVal;
+            const aCell = a.cells[colIndex];
+            const bCell = b.cells[colIndex];
+
+            if (type === 'num') {
+                aVal = parseFloat(aCell.getAttribute('data-val') || aCell.textContent.replace(/[$,+]/g, '')) || 0;
+                bVal = parseFloat(bCell.getAttribute('data-val') || bCell.textContent.replace(/[$,+]/g, '')) || 0;
+            } else {
+                aVal = aCell.textContent.trim().toLowerCase();
+                bVal = bCell.textContent.trim().toLowerCase();
+            }
+
+            if (aVal < bVal) return dir === 'asc' ? -1 : 1;
+            if (aVal > bVal) return dir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(function(row, i) {
+            row.cells[0].textContent = i + 1;
+            tbody.appendChild(row);
+        });
+    }
+</script>
+{% endblock %}

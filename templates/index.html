@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block title %}Cook County Tax Appeal Tool{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Analyze Your Property</h2>
+    <p style="margin-bottom: 1.5rem; color: #718096;">
+        Enter your 14-digit Property Index Number (PIN) to find comparable properties
+        and assess your appeal case. You can find your PIN on your tax bill or at
+        <a href="https://maps.cookcountyil.gov/cookviewer" target="_blank">CookViewer</a>.
+    </p>
+
+    <form action="/analyze" method="POST">
+        <div style="margin-bottom: 1.5rem;">
+            <label for="pin" style="display:block; font-weight:600; margin-bottom:0.5rem;">
+                Property PIN
+            </label>
+            <input type="text" id="pin" name="pin"
+                   placeholder="e.g. 05-17-417-020-0000"
+                   required>
+        </div>
+
+        <details style="margin-bottom: 1.5rem;">
+            <summary style="cursor:pointer; font-weight:600; color:#4a5568;">
+                Adjust Similarity Weights (optional)
+            </summary>
+            <p style="font-size:0.85rem; color:#718096; margin: 0.5rem 0;">
+                These weights control how much each factor matters when finding comparable properties.
+                Higher values mean that factor matters more.
+            </p>
+            <div class="slider-group">
+                <div class="slider-item">
+                    <label>Square Footage: <span id="v_sqft">40</span></label>
+                    <input type="range" name="w_sqft" min="0" max="100" value="40"
+                           oninput="document.getElementById('v_sqft').textContent=this.value">
+                </div>
+                <div class="slider-item">
+                    <label>Year Built / Age: <span id="v_year">30</span></label>
+                    <input type="range" name="w_year" min="0" max="100" value="30"
+                           oninput="document.getElementById('v_year').textContent=this.value">
+                </div>
+                <div class="slider-item">
+                    <label>Bedrooms: <span id="v_beds">15</span></label>
+                    <input type="range" name="w_beds" min="0" max="100" value="15"
+                           oninput="document.getElementById('v_beds').textContent=this.value">
+                </div>
+                <div class="slider-item">
+                    <label>Lot Size: <span id="v_lot">15</span></label>
+                    <input type="range" name="w_lot" min="0" max="100" value="15"
+                           oninput="document.getElementById('v_lot').textContent=this.value">
+                </div>
+            </div>
+        </details>
+
+        <button type="submit" class="btn">Analyze My Property</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>How It Works</h2>
+    <p style="color: #718096; font-size: 0.9rem; margin-bottom: 0.75rem;">
+        This tool automates the process of finding comparable properties for a Cook County
+        property tax appeal. It supports two types of arguments:
+    </p>
+    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+        <strong>Uniformity:</strong> Are similar properties in your neighborhood assessed
+        at a lower rate per square foot? If so, your assessment may not be uniform.
+    </p>
+    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+        <strong>Overvaluation:</strong> Does your assessment imply a fair market value
+        higher than what comparable homes have actually sold for?
+    </p>
+    <p style="font-size: 0.9rem; color: #718096; margin-top: 0.75rem;">
+        All data comes from the Cook County Open Data Portal. This tool currently supports
+        single-family residential properties.
+    </p>
+</div>
+
+<div id="loading-overlay" style="display:none;">
+    <div style="
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(26, 54, 93, 0.95);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+    ">
+        <div style="
+            width: 60px; height: 60px;
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+        "></div>
+        <h2 style="margin-bottom: 1rem;">Analyzing Your Property</h2>
+        <p style="opacity: 0.8; margin-bottom: 0.5rem;">
+            We are pulling your property details, finding comparable homes,
+            analyzing assessments, and reviewing recent sales.
+        </p>
+        <p style="opacity: 0.6; font-size: 0.85rem;">
+            This may take up to 4 minutes. Please do not close this page.
+        </p>
+    </div>
+</div>
+
+<style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function() {
+        document.getElementById('loading-overlay').style.display = 'block';
+    });
+</script>
+{% endblock %}

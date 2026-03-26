@@ -1,0 +1,344 @@
+{% extends "layout.html" %}
+
+{% block title %}Results for {{ prop.pin }}{% endblock %}
+
+{% block content %}
+
+<!-- Property Summary -->
+<div class="card">
+    <h2>Your Property</h2>
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="value">{{ prop.pin[:2] }}-{{ prop.pin[2:4] }}-{{ prop.pin[4:7] }}-{{ prop.pin[7:10] }}-{{ prop.pin[10:] }}</div>
+            <div class="label">PIN</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ prop.address }}</div>
+            <div class="label">Address</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ prop.township }}</div>
+            <div class="label">Township</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ prop.class }}</div>
+            <div class="label">Class</div>
+        </div>
+    </div>
+
+    <div class="stat-grid" style="margin-top: 1rem;">
+        <div class="stat-box">
+            <div class="value">{{ "{:,.0f}".format(prop.sqft) }} sqft</div>
+            <div class="label">Building Size</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ "{:.0f}".format(prop.year_built) }}</div>
+            <div class="label">Year Built</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ "{:.0f}".format(prop.beds) }} bed / {{ "{:.0f}".format(prop.full_baths) }} bath</div>
+            <div class="label">Bedrooms / Bathrooms</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ "{:,.0f}".format(prop.land_sf) }} sqft</div>
+            <div class="label">Lot Size</div>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment Summary -->
+<div class="card">
+    <h2>Assessment ({{ prop.assess_year }})</h2>
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(prop.mailed_tot) }}</div>
+            <div class="label">Total Mailed Assessment</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(prop.mailed_bldg) }} / ${{ "{:,.0f}".format(prop.mailed_land) }}</div>
+            <div class="label">Building / Land</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(prop.implied_fmv) }}</div>
+            <div class="label">Implied Fair Market Value</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">${{ "{:,.2f}".format(prop.assess_per_sqft) }}</div>
+            <div class="label">Assessment per Sqft</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estimated Savings -->
+{% if savings %}
+<div class="card">
+    <h2>Estimated Savings</h2>
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(savings.current_assess) }} → ${{ "{:,.0f}".format(savings.proposed_assess) }}</div>
+            <div class="label">Current → Proposed Assessment</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(savings.reduction) }}</div>
+            <div class="label">Assessment Reduction</div>
+        </div>
+        <div class="stat-box">
+            <div class="value positive">${{ "{:,.0f}".format(savings.estimated_annual_savings) }}</div>
+            <div class="label">Estimated Annual Savings</div>
+        </div>
+    </div>
+    <p style="font-size: 0.8rem; color: #718096; margin-top: 1rem;">
+        Savings estimate based on the average assessment of your top comparable properties,
+        using a default equalization factor and estimated tax rate. Actual savings may vary.
+    </p>
+</div>
+{% endif %}
+
+<!-- Uniformity Analysis -->
+<div class="card">
+    <h2>Uniformity Analysis</h2>
+    <p style="font-size: 0.9rem; color: #718096; margin-bottom: 1rem;">
+        Properties in the same neighborhood ({{ prop.nbhd_code }}) and class ({{ prop.class }}),
+        filtered to the most similar quartile, then ranked by assessment advantage.
+    </p>
+
+    {% if comps %}
+    <div class="stat-grid" style="margin-bottom: 1rem;">
+        <div class="stat-box">
+            <div class="value">${{ "{:,.2f}".format(prop.assess_per_sqft) }}</div>
+            <div class="label">Your Assessment / Sqft</div>
+        </div>
+        <div class="stat-box">
+            {% set all_assess = comps | map(attribute='assess_per_sqft') | list %}
+            <div class="value">${{ "{:,.2f}".format((all_assess | sum) / (all_assess | length)) }}</div>
+            <div class="label">Avg of Comparable Pool / Sqft</div>
+        </div>
+        <div class="stat-box">
+            {% set positive_comps = comps | selectattr('savings_per_sqft', 'gt', 0) | list %}
+            {% if positive_comps | length >= 5 %}
+                {% set top5 = positive_comps[:5] %}
+                {% set top5_assess = top5 | map(attribute='assess_per_sqft') | list %}
+                <div class="value positive">${{ "{:,.2f}".format((top5_assess | sum) / (top5_assess | length)) }}</div>
+            {% elif positive_comps %}
+                {% set pos_assess = positive_comps | map(attribute='assess_per_sqft') | list %}
+                <div class="value positive">${{ "{:,.2f}".format((pos_assess | sum) / (pos_assess | length)) }}</div>
+            {% else %}
+                <div class="value">N/A</div>
+            {% endif %}
+            <div class="label">Avg of Top Lower Comps / Sqft</div>
+        </div>
+        <div class="stat-box">
+            {% if positive_comps %}
+                <div class="value positive">{{ positive_comps | length }}</div>
+            {% else %}
+                <div class="value negative">0</div>
+            {% endif %}
+            <div class="label">Comps Assessed Lower</div>
+        </div>
+    </div>
+
+    <p style="margin-bottom: 1rem;">
+        Case strength:
+        {% if uniformity_strength == "strong" %}
+            <span class="badge-strong">STRONG — 5+ similar properties assessed lower than you</span>
+        {% elif uniformity_strength == "moderate" %}
+            <span class="badge-weak">MODERATE — some similar properties assessed lower</span>
+        {% elif uniformity_strength == "weak" %}
+            <span class="badge-weak">WEAK — very few similar properties assessed lower</span>
+        {% else %}
+            <span class="badge-none">NO CASE — similar properties are not assessed lower than you</span>
+        {% endif %}
+    </p>
+
+<div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>PIN</th>
+                    <th>Address</th>
+                    <th>Sqft</th>
+                    <th>Year Built</th>
+                    <th>Beds</th>
+                    <th>Assessment</th>
+                    <th>$/Sqft</th>
+                    <th>Savings/Sqft</th>
+                    <th>Similarity</th>
+                    <th>Appeal Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in comps %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ comp.pin }}</td>
+                    <td>{{ comp.get("address", "N/A") }}</td>
+                    <td>{{ "{:,.0f}".format(comp.char_bldg_sf) }}</td>
+                    <td>{{ "{:.0f}".format(comp.char_yrblt) }}</td>
+                    <td>{{ "{:.0f}".format(comp.char_beds) }}</td>
+                    <td>${{ "{:,.0f}".format(comp.mailed_tot) }}</td>
+                    <td>${{ "{:,.2f}".format(comp.assess_per_sqft) }}</td>
+                    <td class="{{ 'positive' if comp.savings_per_sqft > 0 else 'negative' }}">
+                        ${{ "{:,.2f}".format(comp.savings_per_sqft) }}
+                    </td>
+                    <td>{{ comp.similarity_pct }}%</td>
+                    <td>{{ "{:,.1f}".format(comp.appeal_score) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="margin-top: 1rem; font-size: 0.9rem;">
+        <a href="/comps/{{ pin }}">See all comparable properties →</a>
+    </p>
+    {% else %}
+    <p style="color: #9b2c2c;">No comparable properties found for uniformity analysis.</p>
+    {% endif %}
+</div>
+
+<!-- Overvaluation Analysis -->
+<div class="card">
+    <h2>Overvaluation Analysis</h2>
+
+    {% if sales.total_sales > 0 %}
+    <div class="stat-grid" style="margin-bottom: 1rem;">
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(sales.implied_fmv) }}</div>
+            <div class="label">Your Implied FMV</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">${{ "{:,.0f}".format(sales.median_price) }}</div>
+            <div class="label">Median Sale Price</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ sales.total_sales }}</div>
+            <div class="label">Total Recent Sales</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ sales.sales_below_fmv }}</div>
+            <div class="label">Sales Below Your FMV</div>
+        </div>
+    </div>
+
+    <p style="margin-bottom: 1rem;">
+        Case strength:
+        {% if sales.case_strength == "strong" %}
+            <span class="badge-strong">STRONG — 5+ similar sales below your implied FMV</span>
+        {% elif sales.case_strength == "weak" %}
+            <span class="badge-weak">WEAK — some sales below FMV but fewer than 5 strong comps</span>
+        {% else %}
+            <span class="badge-none">NO CASE — no similar properties sold below your implied FMV</span>
+        {% endif %}
+    </p>
+
+    {% if sales_comps %}
+    <p style="font-size: 0.9rem; color: #718096; margin-bottom: 1rem;">
+        Comparable sales below your implied fair market value, ranked by similarity:
+    </p>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>PIN</th>
+                    <th>Address</th>
+                    <th>Sale Price</th>
+                    <th>Sale Date</th>
+                    <th>Sqft</th>
+                    <th>Year Built</th>
+                    <th>Beds</th>
+                    <th>Similarity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales_comps %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ sale.pin }}</td>
+                    <td>{{ sale.get("address", "N/A") }}</td>
+                    <td>${{ "{:,.0f}".format(sale.sale_price) }}</td>
+                    <td>{{ sale.sale_date[:10] }}</td>
+                    <td>{{ "{:,.0f}".format(sale.char_bldg_sf) if sale.char_bldg_sf else "N/A" }}</td>
+                    <td>{{ "{:.0f}".format(sale.char_yrblt) if sale.char_yrblt else "N/A" }}</td>
+                    <td>{{ "{:.0f}".format(sale.char_beds) if sale.char_beds else "N/A" }}</td>
+                    <td>{{ sale.similarity_pct if sale.similarity_pct is defined else "N/A" }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="margin-top: 1rem; font-size: 0.9rem;">
+        <a href="/sales/{{ pin }}">See all sales data →</a>
+    </p>
+    {% endif %}
+
+    {% else %}
+    <p style="color: #718096;">{{ sales.reason }}</p>
+    {% endif %}
+</div>
+
+<!-- What To Do Next -->
+<div class="card">
+    <h2>What to Do Next</h2>
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+        Based on the analysis above, here is how to proceed with your appeal:
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        <strong>1. Review your options.</strong> Look at both the Uniformity and Overvaluation
+        analyses above. You can file based on either or both arguments in a single appeal.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        <strong>2. Select your best comparables.</strong> Pick 3 to 5 properties from the tables
+        above that are most similar to yours in size, age, and features. The Board of Review
+        will evaluate whether your chosen comparables are truly comparable, so prioritize
+        properties that a reasonable person would agree are similar to yours.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        <strong>3. File your appeal.</strong> You can file directly with the Cook County
+        Assessor's Office during the open appeal window for your township, or with the
+        Board of Review after the Assessor completes their review. Filing is free and
+        can be done online:
+    </p>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0;">
+        <a href="https://www.cookcountyassessor.com/online-appeals"
+           target="_blank" class="btn" style="text-decoration:none; display:inline-block;">
+            File with the Assessor's Office
+        </a>
+        <a href="https://appeals.cookcountyboardofreview.com"
+           target="_blank" class="btn" style="text-decoration:none; display:inline-block; background:#276749;">
+            File with the Board of Review
+        </a>
+    </div>
+
+    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        <strong>4. Gather your evidence.</strong> For your filing, you will need the PINs and
+        addresses of your chosen comparable properties, their assessed values, and photos of
+        the front of your property. For overvaluation, include sale prices and dates.
+    </p>
+
+    <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        <strong>5. Check your deadlines.</strong> Appeal windows vary by township.
+        Check the <a href="https://www.cookcountyboardofreview.com/dates-and-deadlines"
+        target="_blank">Board of Review schedule</a> for your township's dates.
+    </p>
+
+    <p style="font-size: 0.9rem; color: #718096; margin-top: 1rem;">
+        Want to understand how property assessment and appeals work?
+        <a href="/learn">Read our guide to the Cook County appeal process →</a>
+    </p>
+</div>
+
+<!-- Disclaimer -->
+<div class="card">
+    <p style="font-size: 0.8rem; color: #a0aec0;">
+        <strong>Disclaimer:</strong> This tool is for informational purposes only and does not constitute
+        legal or tax advice. Data comes from the Cook County Open Data Portal and may not
+        reflect the most recent changes. Consult a property tax professional before filing.
+    </p>
+</div>
+
+{% endblock %}

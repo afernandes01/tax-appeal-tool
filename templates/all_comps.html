@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}All Comps for {{ prop.pin }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>All Comparable Properties</h2>
+    <p style="font-size: 0.9rem; color: #718096; margin-bottom: 1rem;">
+        Full comparable pool for {{ prop.address }} ({{ prop.pin }}).
+        Neighborhood {{ prop.nbhd_code }}, Class {{ prop.class }}.
+        Your assessment per sqft: <strong>${{ "{:,.2f}".format(prop.assess_per_sqft) }}</strong>.
+        Click any column header to sort.
+    </p>
+
+    {% if comps %}
+    <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+        <table id="comps-table">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th onclick="sortTable('comps-table', 0, 'num')" style="cursor:pointer;">#</th>
+                    <th onclick="sortTable('comps-table', 1, 'str')" style="cursor:pointer;">PIN ↕</th>
+                    <th onclick="sortTable('comps-table', 2, 'str')" style="cursor:pointer;">Address ↕</th>
+                    <th onclick="sortTable('comps-table', 3, 'num')" style="cursor:pointer;">Sqft ↕</th>
+                    <th onclick="sortTable('comps-table', 4, 'num')" style="cursor:pointer;">Year Built ↕</th>
+                    <th onclick="sortTable('comps-table', 5, 'num')" style="cursor:pointer;">Beds ↕</th>
+                    <th onclick="sortTable('comps-table', 6, 'num')" style="cursor:pointer;">Assessment ↕</th>
+                    <th onclick="sortTable('comps-table', 7, 'num')" style="cursor:pointer;">$/Sqft ↕</th>
+                    <th onclick="sortTable('comps-table', 8, 'num')" style="cursor:pointer;">Savings/Sqft ↕</th>
+                    <th onclick="sortTable('comps-table', 9, 'num')" style="cursor:pointer;">Similarity ↕</th>
+                    <th onclick="sortTable('comps-table', 10, 'num')" style="cursor:pointer;">Appeal Score ↕</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in comps %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ comp.pin }}</td>
+                    <td>{{ comp.get("address", "N/A") }}</td>
+                    <td data-val="{{ comp.char_bldg_sf }}">{{ "{:,.0f}".format(comp.char_bldg_sf) }}</td>
+                    <td data-val="{{ comp.char_yrblt }}">{{ "{:.0f}".format(comp.char_yrblt) }}</td>
+                    <td data-val="{{ comp.char_beds }}">{{ "{:.0f}".format(comp.char_beds) }}</td>
+                    <td data-val="{{ comp.mailed_tot }}">${{ "{:,.0f}".format(comp.mailed_tot) }}</td>
+                    <td data-val="{{ comp.assess_per_sqft }}">${{ "{:,.2f}".format(comp.assess_per_sqft) }}</td>
+                    <td data-val="{{ comp.savings_per_sqft }}" class="{{ 'positive' if comp.savings_per_sqft > 0 else 'negative' }}">
+                        ${{ "{:,.2f}".format(comp.savings_per_sqft) }}
+                    </td>
+                    <td data-val="{{ comp.similarity_pct }}">{{ comp.similarity_pct }}%</td>
+                    <td data-val="{{ comp.appeal_score }}">{{ "{:,.1f}".format(comp.appeal_score) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No comparable properties found.</p>
+    {% endif %}
+
+    <p style="margin-top: 1.5rem;">
+        <a href="javascript:history.back()" class="btn" style="text-decoration:none; display:inline-block;">← Back to Results</a>
+    </p>
+</div>
+
+<script>
+    let sortDirections = {};
+
+    function sortTable(tableId, colIndex, type) {
+        const table = document.getElementById(tableId);
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        const dir = sortDirections[tableId + colIndex] === 'asc' ? 'desc' : 'asc';
+        sortDirections[tableId + colIndex] = dir;
+
+        rows.sort(function(a, b) {
+            let aVal, bVal;
+            const aCell = a.cells[colIndex];
+            const bCell = b.cells[colIndex];
+
+            if (type === 'num') {
+                aVal = parseFloat(aCell.getAttribute('data-val') || aCell.textContent.replace(/[$,+]/g, '')) || 0;
+                bVal = parseFloat(bCell.getAttribute('data-val') || bCell.textContent.replace(/[$,+]/g, '')) || 0;
+            } else {
+                aVal = aCell.textContent.trim().toLowerCase();
+                bVal = bCell.textContent.trim().toLowerCase();
+            }
+
+            if (aVal < bVal) return dir === 'asc' ? -1 : 1;
+            if (aVal > bVal) return dir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(function(row, i) {
+            row.cells[0].textContent = i + 1;
+            tbody.appendChild(row);
+        });
+    }
+</script>
+{% endblock %}
