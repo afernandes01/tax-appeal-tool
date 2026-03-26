@@ -189,7 +189,7 @@ def find_comps(prop, weights=None, ranges=None, limit=30):
     chars_data = query_socrata(CHARACTERISTICS, {
         "$where": f"pin IN ({pin_filter})",
         "$order": "year DESC",
-        "$limit": 50000
+        "$limit": 5000
     })
     chars_df = pd.DataFrame(chars_data)
 
@@ -214,7 +214,7 @@ def find_comps(prop, weights=None, ranges=None, limit=30):
     assess_data = query_socrata(ASSESSED_VALUES, {
         "$where": f"pin IN ({pin_filter2}) AND year='{assess_year}'",
         "$select": "pin, mailed_tot, mailed_bldg, mailed_land",
-        "$limit": 50000
+        "$limit": 5000
     })
     assess_df = pd.DataFrame(assess_data)
 
